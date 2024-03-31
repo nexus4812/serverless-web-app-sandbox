@@ -39,6 +39,18 @@ functions:
           - dynamodb:PutItem
         Resource: 'arn:aws:dynamodb:*:*:table/tasks'
 
+  taskList:
+    handler: src/taskHandler.list
+    events:
+      - httpApi:
+          method: get
+          path: /tasks
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: 'arn:aws:dynamodb:*:*:table/tasks'
+
 resources:
   Resources:
     TasksDynamoDBTable:
