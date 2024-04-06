@@ -9,11 +9,16 @@ plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
   - serverless-api-gateway-throttling
+  - serverless-s3-sync
 
 custom:
   apiGatewayThrottling:
     maxRequestsPerSecond: 10
     maxConcurrentRequests: 5
+  bucketName: nexus4812-serverless-sandbox
+  s3Sync:
+    - bucketName: ${self:custom.bucketName}
+      localDir: static
 
 provider:
   name: aws
@@ -66,4 +71,31 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+
+    StaticSiteS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+        WebsiteConfiguration:
+          IndexDocument: index.html
+
+    StaticSiteS3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: StaticSiteS3Bucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - s3:GetObject
+              Resource: 'arn:aws:s3:::${self:custom.bucketName}/*'
+
 
